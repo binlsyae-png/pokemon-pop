@@ -1,0 +1,1245 @@
+/* ==========================================================================
+   포켓몬 팡팡! (PokeWhack!) - Modern Landscape Web Game Stylesheet
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700;800&family=Jua&family=Pretendard:wght@400;600;700;800;900&display=swap');
+
+:root {
+  --primary-red: #ff3e3e;
+  --poke-yellow: #ffcb05;
+  --poke-blue: #2a75bb;
+  --poke-darkblue: #1b4f72;
+  --grass-light: #7cd958;
+  --grass-dark: #479e28;
+  --dirt-rim: #6d4c41;
+  --dirt-dark: #3e2723;
+  --card-bg: rgba(255, 255, 255, 0.95);
+  --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.22);
+  --font-display: 'Jua', 'Fredoka', 'Pretendard', sans-serif;
+  --font-body: 'Pretendard', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #111827;
+  font-family: var(--font-body);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+}
+
+/* ==========================================================================
+   가로형 게임 컨테이너 (Landscape Game Canvas Container)
+   ========================================================================== */
+#game-wrapper {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  max-width: 1366px;
+  max-height: 768px;
+  aspect-ratio: 16 / 9;
+  background: #111827;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.7);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 화면 높이가 낮을 경우에도 유연하게 줄어들도록 반응형 */
+@media (max-height: 700px) {
+  #game-wrapper {
+    max-height: 98vh;
+    border-radius: 8px;
+  }
+}
+
+/* 배경 환경 레이어 (구름, 잔디 언덕, 펜스) */
+.env-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 2;
+}
+
+/* 포켓몬 경기장 조명 & 햇살 효과 */
+.sky-sunbeam {
+  position: absolute;
+  top: -20%;
+  left: -20%;
+  width: 140%;
+  height: 140%;
+  background: radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.25) 0%, rgba(255, 235, 150, 0.1) 40%, transparent 70%);
+  pointer-events: none;
+}
+
+/* 기존 임시 언덕/펜스는 고화질 일러스트가 직접 보이도록 숨김 처리 */
+.hills, .fence-line, .poke-balloon, .cloud, .bush, .flower {
+  display: none !important;
+}
+
+/* ==========================================================================
+   화면 공통 (Screen) - 상호 배타적 단일 페이지 화면 전환
+   ========================================================================== */
+.screen,
+#start-screen,
+#game-screen,
+#result-screen {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex;
+  flex-direction: column;
+  z-index: 20;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.screen.hidden,
+#start-screen.hidden,
+#game-screen.hidden,
+#result-screen.hidden,
+.hidden {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+/* ==========================================================================
+   화면 1: 시작 & 트레이너 선택 화면 (Start Screen) - 포켓몬 타이틀 배경
+   ========================================================================== */
+#start-screen {
+  background: #111827 url('./assets/bg_title.jpg') center center / cover no-repeat;
+  padding: clamp(10px, 1.8vh, 18px) clamp(16px, 2.5vw, 32px);
+  align-items: center;
+  justify-content: space-between;
+}
+
+#start-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.12) 0%, rgba(0, 0, 0, 0.2) 100%);
+  pointer-events: none;
+}
+
+.start-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.logo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #ff3e3e, #d32f2f);
+  padding: clamp(4px, 0.8vh, 8px) clamp(16px, 2vw, 24px);
+  border-radius: 40px;
+  box-shadow: 0 4px 14px rgba(255, 62, 62, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.5);
+  border: 3px solid #ffcb05;
+}
+
+.logo-pokeball {
+  width: clamp(24px, 3.5vh, 32px);
+  height: clamp(24px, 3.5vh, 32px);
+  background: linear-gradient(180deg, #ff1744 50%, #ffffff 50%);
+  border-radius: 50%;
+  border: 2.5px solid #222;
+  position: relative;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  animation: spinPoke 6s linear infinite;
+}
+.logo-pokeball::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 3.5px;
+  background: #222;
+  transform: translateY(-50%);
+}
+.logo-pokeball::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: #fff;
+  border: 2px solid #222;
+  border-radius: 50%;
+}
+
+@keyframes spinPoke {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.game-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3.6vh, 2.5rem);
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 2.5px 2.5px 0 #1b4f72, -1.5px -1.5px 0 #1b4f72, 1.5px -1.5px 0 #1b4f72, -1.5px 1.5px 0 #1b4f72;
+  letter-spacing: 1.5px;
+}
+.game-title .pop-text {
+  color: #ffcb05;
+  text-shadow: 2.5px 2.5px 0 #c47d00, -1.5px -1.5px 0 #c47d00, 1.5px -1.5px 0 #c47d00, -1.5px 1.5px 0 #c47d00;
+  display: inline-block;
+  animation: bounceTitle 1.8s ease-in-out infinite;
+}
+
+@keyframes bounceTitle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px) scale(1.05); }
+}
+
+.subtitle-badge {
+  font-size: clamp(0.72rem, 1.4vh, 0.9rem);
+  font-weight: 700;
+  color: #2c3e50;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 12px;
+  border-radius: 20px;
+  display: inline-block;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* 트레이너 선택 구역 */
+.trainer-section {
+  width: 96%;
+  max-width: 1060px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(6px, 1.2vh, 12px);
+  flex: 1;
+  justify-content: center;
+}
+
+.section-label {
+  font-family: var(--font-display);
+  font-size: clamp(0.95rem, 2.2vh, 1.25rem);
+  color: #1b4f72;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.trainer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(8px, 1.5vw, 16px);
+  width: 100%;
+}
+
+.trainer-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: clamp(8px, 1.4vh, 14px) clamp(6px, 1vw, 10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  border: 3px solid #e2e8f0;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.trainer-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: var(--trainer-color, #ff4d4f);
+}
+
+.trainer-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  border-color: var(--trainer-color, #ff4d4f);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.trainer-card.selected {
+  border-color: var(--trainer-color, #ff4d4f);
+  background: linear-gradient(180deg, #ffffff 0%, rgba(255, 245, 245, 0.95) 100%);
+  transform: translateY(-6px) scale(1.04);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2), 0 0 0 3px var(--trainer-color, #ff4d4f);
+}
+
+.trainer-avatar-wrap {
+  width: clamp(60px, 11vh, 88px);
+  height: clamp(60px, 11vh, 88px);
+  background: radial-gradient(circle, #ffffff 0%, #edf2f7 100%);
+  border-radius: 50%;
+  border: 3px solid var(--trainer-color, #ff4d4f);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.trainer-avatar-img {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+  transition: transform 0.25s ease;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.25));
+}
+.trainer-card:hover .trainer-avatar-img {
+  transform: scale(1.15) translateY(-2px);
+}
+
+.trainer-name {
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 2.2vh, 1.25rem);
+  font-weight: 800;
+  color: #1f2937;
+  margin-bottom: 2px;
+}
+
+.trainer-role {
+  font-size: clamp(0.65rem, 1.3vh, 0.78rem);
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+.trainer-hammer-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: clamp(0.62rem, 1.2vh, 0.72rem);
+  font-weight: 700;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.selected-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  background: var(--trainer-color, #ff4d4f);
+  color: #fff;
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+.trainer-card.selected .selected-check {
+  display: flex;
+  animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 시작 화면 하단 컨트롤 바 (항상 보이고 절대 안 잘리도록 최적화) */
+.start-footer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: clamp(6px, 1.2vh, 12px);
+  z-index: 10;
+}
+
+.btn-game-primary {
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 2.6vh, 1.45rem);
+  font-weight: 800;
+  padding: clamp(10px, 1.8vh, 14px) clamp(32px, 4vw, 54px);
+  border-radius: 50px;
+  border: none;
+  background: linear-gradient(180deg, #ff4d4f 0%, #d9363e 100%);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #b71c1c, 0 10px 18px rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: 1px;
+  transition: all 0.15s ease;
+}
+.btn-game-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 0 #b71c1c, 0 14px 22px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(180deg, #ff6668 0%, #e53935 100%);
+}
+.btn-game-primary:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #b71c1c, 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.btn-icon-round {
+  width: clamp(40px, 6vh, 48px);
+  height: clamp(40px, 6vh, 48px);
+  border-radius: 50%;
+  border: 2.5px solid #fff;
+  background: #ffffff;
+  color: #2c3e50;
+  font-size: clamp(1.1rem, 2.2vh, 1.3rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+.btn-icon-round:hover {
+  transform: scale(1.1);
+  background: #edf2f7;
+}
+
+/* ==========================================================================
+   화면 2: 게임 플레이 화면 (Main Game Board)
+   ========================================================================== */
+#game-screen {
+  background: #111827 url('./assets/bg_stadium.jpg') center center / cover no-repeat;
+  justify-content: space-between;
+  padding: clamp(6px, 1.2vh, 12px) clamp(12px, 2vw, 24px) 0 clamp(12px, 2vw, 24px);
+}
+
+/* 3, 2, 1 카운트다운 오버레이 (게임 시작 시 스타디움 필드 중앙 카운트다운) */
+.countdown-overlay {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: radial-gradient(circle at center, rgba(15, 23, 42, 0.45) 0%, rgba(10, 15, 25, 0.75) 100%) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 100 !important;
+  pointer-events: none;
+}
+
+.countdown-overlay.hidden {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.countdown-number {
+  font-family: var(--font-display);
+  font-size: clamp(5rem, 16vh, 9.5rem);
+  font-weight: 900;
+  color: #ff3e3e;
+  text-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 0 0 50px rgba(255, 255, 255, 0.9);
+  line-height: 1;
+  letter-spacing: 2px;
+  will-change: transform, opacity;
+}
+
+.countdown-sub {
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 3.5vh, 2.3rem);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 3px;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
+  margin-top: 10px;
+}
+
+@keyframes countPop {
+  0% {
+    transform: scale(0.3) rotate(-12deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15) rotate(3deg);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(0.95) rotate(-1deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* 상단 HUD (점수, 타이머, 콤보, 컨트롤) */
+.hud-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  padding: clamp(5px, 1vh, 8px) clamp(12px, 2vw, 20px);
+  border-radius: 40px;
+  border: 3px solid #ffcb05;
+  box-shadow: var(--shadow-soft);
+  z-index: 50;
+  gap: 10px;
+}
+
+/* 찬스 웨이브 배너 (최고 점수 포켓몬 노리기) */
+.chance-banner {
+  position: absolute;
+  top: clamp(60px, 11vh, 80px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ff9800, #e65100);
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: clamp(0.85rem, 1.8vh, 1.15rem);
+  font-weight: 900;
+  padding: 5px 22px;
+  border-radius: 30px;
+  border: 2.5px solid #ffeb3b;
+  box-shadow: 0 6px 18px rgba(230, 81, 0, 0.5);
+  z-index: 52;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+  animation: bannerGlow 1s ease-in-out infinite alternate;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+.chance-banner.hidden {
+  opacity: 0;
+  transform: translate(-50%, -15px) scale(0.85);
+  pointer-events: none;
+}
+@keyframes bannerGlow {
+  0% { transform: translateX(-50%) scale(1); filter: drop-shadow(0 0 4px #ffeb3b); }
+  100% { transform: translateX(-50%) scale(1.04); filter: drop-shadow(0 0 12px #ffc107); }
+}
+
+.hud-trainer-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hud-trainer-avatar {
+  width: clamp(34px, 5.5vh, 44px);
+  height: clamp(34px, 5.5vh, 44px);
+  border-radius: 50%;
+  border: 2px solid #ff4d4f;
+  background: #f0f4f8;
+  object-fit: contain;
+}
+.hud-trainer-text {
+  display: flex;
+  flex-direction: column;
+}
+.hud-trainer-name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(0.85rem, 1.8vh, 1.05rem);
+  color: #1b4f72;
+}
+.hud-hammer-badge {
+  font-size: clamp(0.62rem, 1.3vh, 0.72rem);
+  font-weight: 700;
+  color: #ff4d4f;
+}
+
+/* 타이머 */
+.timer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: clamp(120px, 18vw, 170px);
+  gap: 2px;
+}
+.timer-text-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--font-display);
+}
+.timer-label {
+  font-size: clamp(0.7rem, 1.4vh, 0.85rem);
+  color: #64748b;
+  font-weight: 700;
+}
+.timer-val {
+  font-size: clamp(1.2rem, 2.8vh, 1.6rem);
+  font-weight: 900;
+  color: #1e293b;
+  min-width: 50px;
+  text-align: right;
+  letter-spacing: 0.5px;
+}
+.timer-val.warning {
+  color: #e53935;
+  animation: pulseTimer 0.6s infinite alternate;
+}
+@keyframes pulseTimer {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.15); text-shadow: 0 0 10px rgba(229, 57, 53, 0.6); }
+}
+
+.timer-progress-track {
+  width: 100%;
+  height: clamp(6px, 1.2vh, 9px);
+  background: #e2e8f0;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+}
+.timer-progress-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #4caf50, #8bc34a);
+  border-radius: 20px;
+  transition: width 0.1s linear, background 0.4s ease;
+}
+.timer-progress-fill.warning {
+  background: linear-gradient(90deg, #ff9800, #f44336);
+}
+
+/* 점수 표시기 */
+.score-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #1b4f72, #2a75bb);
+  padding: clamp(4px, 0.8vh, 6px) clamp(12px, 1.8vw, 18px);
+  border-radius: 30px;
+  color: #fff;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+.score-icon {
+  font-size: clamp(1rem, 2vh, 1.3rem);
+}
+.score-meta {
+  display: flex;
+  flex-direction: column;
+}
+.score-label {
+  font-size: clamp(0.55rem, 1.1vh, 0.68rem);
+  font-weight: 700;
+  color: #ffcb05;
+  letter-spacing: 0.5px;
+}
+.score-val {
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 2.6vh, 1.55rem);
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* 콤보 배수 */
+.combo-badge {
+  min-width: 70px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: clamp(0.85rem, 1.8vh, 1.1rem);
+  font-weight: 900;
+  color: #e67e22;
+  background: #fff3e0;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 2px solid #ffb74d;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.combo-badge.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ==========================================================================
+   메인 3×3 두더지 구멍 잔디밭 (Playfield Grid)
+   ========================================================================== */
+.playfield-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 30;
+  margin-bottom: clamp(10px, 3vh, 24px);
+}
+
+.holes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: clamp(8px, 1.6vh, 18px) clamp(14px, 3vw, 36px);
+  width: 90%;
+  max-width: 740px;
+  aspect-ratio: 16 / 10;
+  perspective: 700px;
+}
+
+/* 개별 구멍 유닛 */
+.hole-unit {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* 구멍 바닥/림 (Dirt Hole) */
+.hole-base {
+  position: absolute;
+  bottom: 0;
+  width: 96%;
+  height: 52%;
+  background: radial-gradient(ellipse at 50% 50%, #150c07 0%, #351c11 55%, #56331e 100%);
+  border-radius: 50%;
+  box-shadow: 
+    inset 0 14px 24px rgba(0, 0, 0, 0.9),
+    0 8px 16px rgba(0, 0, 0, 0.5);
+  border: 4px solid #452615;
+  z-index: 1;
+}
+
+/* 포켓몬 원작 야생 수풀 (Wild Tall Grass overlay) */
+.hole-grass-front {
+  position: absolute;
+  bottom: -6px;
+  width: 106%;
+  height: 48%;
+  background: linear-gradient(180deg, #6fd62d 0%, #3f9b18 55%, #256a0c 100%);
+  border-radius: 40% 40% 20% 20% / 60% 60% 30% 30%;
+  box-shadow: 0 8px 14px rgba(0, 0, 0, 0.4), inset 0 2px 5px rgba(255, 255, 255, 0.5);
+  z-index: 5;
+  pointer-events: none;
+  clip-path: polygon(
+    0% 100%, 0% 38%, 6% 14%, 13% 42%, 20% 10%, 28% 40%, 36% 12%, 44% 44%, 
+    52% 8%, 62% 40%, 70% 14%, 78% 42%, 86% 16%, 94% 42%, 100% 36%, 100% 100%
+  );
+}
+
+/* 포켓몬 래퍼 (구멍 뒤에서 솟아나옴) */
+.pokemon-slot {
+  position: absolute;
+  bottom: 16%;
+  width: 82%;
+  height: 85%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 3;
+  pointer-events: auto;
+  overflow: visible;
+}
+
+/* 포켓몬 캐릭터 본체 */
+.pokemon-entity {
+  position: relative;
+  width: 92%;
+  height: 92%;
+  object-fit: contain;
+  transform: translateY(115%) scale(0.65);
+  opacity: 0;
+  transition: transform 0.22s cubic-bezier(0.34, 1.4, 0.64, 1), opacity 0.15s ease;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35));
+  will-change: transform, opacity;
+  pointer-events: auto;
+}
+
+/* 등장 상태 */
+.pokemon-slot.active .pokemon-entity {
+  transform: translateY(0%) scale(1);
+  opacity: 1;
+}
+
+/* 피격당함 (Hit) */
+.pokemon-slot.hit .pokemon-entity {
+  transform: translateY(5%) scale(0.9, 0.7) rotate(15deg);
+  filter: brightness(1.6) saturate(1.4) drop-shadow(0 0 18px var(--poke-glow, rgba(255, 215, 0, 0.8)));
+  animation: hitWhack 0.4s ease forwards;
+}
+
+@keyframes hitWhack {
+  0% { transform: translateY(0%) scale(1.1) rotate(0deg); }
+  25% { transform: translateY(10%) scale(1.15, 0.75) rotate(-15deg); }
+  60% { transform: translateY(30%) scale(0.85, 0.95) rotate(25deg); opacity: 0.9; }
+  100% { transform: translateY(115%) scale(0.5) rotate(45deg); opacity: 0; }
+}
+
+/* 포켓몬 기절/타격 별 & 이펙트 */
+.hit-effect-burst {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.burst-pow {
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 3vh, 2rem);
+  font-weight: 900;
+  color: #ffeb3b;
+  text-shadow: 2px 2px 0 #d32f2f, -2px -2px 0 #d32f2f, 2px -2px 0 #d32f2f, -2px 2px 0 #d32f2f;
+  animation: powBurst 0.5s ease-out forwards;
+}
+@keyframes powBurst {
+  0% { transform: scale(0.3) rotate(-20deg); opacity: 0; }
+  40% { transform: scale(1.3) rotate(5deg); opacity: 1; }
+  100% { transform: scale(1.6) translateY(-25px); opacity: 0; }
+}
+
+/* 플로팅 점수 (+3, +10) */
+.floating-score {
+  position: absolute;
+  top: 0%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 3.2vh, 2.2rem);
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 3px 3px 0 #e65100, -2px -2px 0 #e65100, 2px -2px 0 #e65100, -2px 2px 0 #e65100, 0 4px 10px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  z-index: 12;
+  white-space: nowrap;
+  animation: floatScoreUp 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes floatScoreUp {
+  0% { transform: translate(-50%, 20px) scale(0.6); opacity: 0; }
+  30% { transform: translate(-50%, -20px) scale(1.25); opacity: 1; }
+  75% { transform: translate(-50%, -45px) scale(1.05); opacity: 1; }
+  100% { transform: translate(-50%, -70px) scale(0.9); opacity: 0; }
+}
+
+/* 빗맞춤 (Miss) 표시 */
+.miss-text {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #9e9e9e;
+  text-shadow: 2px 2px 0 #424242;
+  pointer-events: none;
+  z-index: 12;
+  animation: floatScoreUp 0.5s ease-out forwards;
+}
+
+/* ==========================================================================
+   화면 하단 트레이너 & 망치 스윙 시스템
+   ========================================================================== */
+.trainer-stage {
+  position: absolute;
+  bottom: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.active-trainer-avatar {
+  position: relative;
+  width: clamp(90px, 17vh, 140px);
+  height: clamp(90px, 17vh, 140px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.trainer-sprite-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35));
+}
+
+/* 트레이너가 들고 있는 망치 (대기 상태) */
+.held-hammer {
+  position: absolute;
+  top: 15%;
+  right: -15%;
+  width: clamp(45px, 8vh, 60px);
+  height: clamp(45px, 8vh, 60px);
+  transform-origin: bottom center;
+  transform: rotate(25deg);
+  transition: transform 0.15s ease;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+/* 트레이너 스윙 시 */
+.active-trainer-avatar.swing {
+  animation: trainerCheer 0.25s ease;
+}
+@keyframes trainerCheer {
+  0% { transform: scale(1) translateY(0); }
+  50% { transform: scale(1.1, 0.92) translateY(-14px); }
+  100% { transform: scale(1) translateY(0); }
+}
+
+/* 타격 위치로 날아와 내려찍는 망치 오브젝트 */
+#strike-hammer {
+  position: absolute;
+  width: clamp(70px, 12vh, 105px);
+  height: clamp(70px, 12vh, 105px);
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0;
+  transform-origin: 80% 80%;
+  will-change: transform, opacity;
+}
+
+#strike-hammer.whack-anim {
+  opacity: 1;
+  animation: hammerSmash 0.22s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+
+@keyframes hammerSmash {
+  0% {
+    transform: translate(-30%, -60%) rotate(55deg) scale(1.15);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -30%) rotate(-32deg) scale(1.05);
+    opacity: 1;
+  }
+  80% {
+    transform: translate(-50%, -25%) rotate(-25deg) scale(0.98);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -10%) rotate(-15deg) scale(0.9);
+    opacity: 0;
+  }
+}
+
+/* 망치 SVG 그래픽 */
+.hammer-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.45));
+}
+
+/* ==========================================================================
+   화면 3: 결과 화면 (Game Over / Victory Modal)
+   ========================================================================== */
+#result-screen {
+  background: rgba(10, 20, 30, 0.82);
+  backdrop-filter: blur(10px);
+  align-items: center;
+  justify-content: center;
+}
+
+.result-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f7fafc 100%);
+  border-radius: 20px;
+  width: 90%;
+  max-width: 580px;
+  padding: clamp(16px, 3vh, 26px) clamp(20px, 3vw, 32px);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.5), 0 0 0 4px #ffcb05;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: resultPopIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+@keyframes resultPopIn {
+  0% { transform: scale(0.7) translateY(40px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.result-ribbon {
+  background: linear-gradient(135deg, #ff3e3e, #d32f2f);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 2.8vh, 1.8rem);
+  font-weight: 900;
+  padding: 5px 32px;
+  border-radius: 40px;
+  margin-top: -38px;
+  box-shadow: 0 6px 16px rgba(255, 62, 62, 0.4);
+  border: 3px solid #ffcb05;
+  letter-spacing: 1px;
+}
+
+.result-trainer-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 8px 0;
+}
+.result-trainer-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 3px solid #2a75bb;
+  background: #edf2f7;
+  object-fit: contain;
+}
+.result-trainer-text {
+  text-align: left;
+}
+.result-trainer-name {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #1b4f72;
+}
+.result-trainer-rank {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #ff3e3e;
+}
+
+/* 스코어보드 그리드 */
+.result-score-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+  margin: 10px 0;
+}
+
+.score-box {
+  background: #edf2f7;
+  padding: 10px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.score-box.highlight {
+  background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+  border: 2px solid #ffb74d;
+}
+.score-box-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 2px;
+}
+.score-box-val {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3.4vh, 2.3rem);
+  font-weight: 900;
+  color: #1e293b;
+  line-height: 1;
+}
+.score-box.highlight .score-box-val {
+  color: #e65100;
+}
+
+.result-stats-row {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  background: #f8fafc;
+  padding: 8px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 14px;
+}
+.result-stat-item span {
+  color: #2a75bb;
+  font-weight: 900;
+}
+
+/* 결과 버튼 그룹 */
+.result-btn-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-secondary {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 800;
+  padding: 10px 24px;
+  border-radius: 40px;
+  border: none;
+  background: #e2e8f0;
+  color: #2d3748;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #cbd5e0;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-secondary:hover {
+  background: #cbd5e0;
+  transform: translateY(-2px);
+}
+.btn-secondary:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #a0aec0;
+}
+
+/* 규칙 모달 (How to play) */
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.modal-card {
+  background: #fff;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 560px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 20px 24px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  position: relative;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #edf2f7;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: #1b4f72;
+}
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: #94a3b8;
+}
+.rules-pokemon-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+.rule-poke-item {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e2e8f0;
+}
+.rule-poke-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+.rule-poke-name {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+.rule-poke-score {
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: #e53935;
+}
+
+/* 파티클 캔버스 */
+#particle-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 55;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); }
+  80% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* 화면 진동 애니메이션 (폭탄 타격 시) */
+.screen-shake {
+  animation: screenQuake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes screenQuake {
+  10%, 90% { transform: translate3d(-4px, -2px, 0) rotate(-0.5deg); }
+  20%, 80% { transform: translate3d(5px, 3px, 0) rotate(0.8deg); }
+  30%, 50%, 70% { transform: translate3d(-7px, -4px, 0) rotate(-1deg); }
+  40%, 60% { transform: translate3d(7px, 4px, 0) rotate(1deg); }
+}
+
+/* 폭탄 포켓몬 규칙 항목 하이라이트 */
+.rule-poke-item.bomb-rule {
+  background: #fff1f2;
+  border-color: #fca5a5;
+}
+.rule-poke-item.bomb-rule .rule-poke-score {
+  color: #b91c1c;
+}

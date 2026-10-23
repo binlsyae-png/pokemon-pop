@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>포켓몬 팡팡! (PokeWhack!) - 가로형 웹게임</title>
+  <meta name="description" content="포켓몬스터 캐릭터를 활용한 신나는 가로형 두더지잡기 웹게임! 지우, 이슬이, 웅이, 세레나와 함께 구멍에서 튀어나오는 포켓몬들을 팡팡 잡아보세요!">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- 가로 화면 최적화 권장 안내 배너 -->
+  <div id="landscape-advisory">
+    <span>📱 가로 화면으로 플레이하시면 더욱 쾌적하게 즐기실 수 있습니다!</span>
+  </div>
+
+  <!-- 메인 게임 가로형 래퍼 (16:9 비율) -->
+  <main id="game-wrapper" role="main">
+
+    <!-- 1. 배경 자연 환경 레이어 (포켓몬 배틀 스타디움, 구름, 언덕, 몬스터볼 필드) -->
+    <div class="env-layer" aria-hidden="true">
+      <div class="sky-sunbeam"></div>
+      <div class="poke-balloon">
+        <div class="balloon-ball"></div>
+        <div class="balloon-basket"></div>
+      </div>
+      <div class="cloud cloud-1"></div>
+      <div class="cloud cloud-2"></div>
+      <div class="hills">
+        <!-- 몬스터볼 배틀필드 대형 엠블럼 -->
+        <div class="stadium-pokeball-circle">
+          <div class="stadium-pokeball-center"></div>
+        </div>
+        <!-- 알록달록 포켓몬 꽃밭과 관목 덤불 -->
+        <div class="bush bush-left"></div>
+        <div class="bush bush-right"></div>
+        <div class="flower flower-1">🌸</div>
+        <div class="flower flower-2">🌼</div>
+        <div class="flower flower-3">🌺</div>
+        <div class="flower flower-4">🌷</div>
+        <div class="flower flower-5">🌼</div>
+      </div>
+      <div class="fence-line"></div>
+    </div>
+
+    <!-- 2. 파티클 이펙트 캔버스 -->
+    <canvas id="particle-canvas" aria-hidden="true"></canvas>
+
+    <!-- 3. 타격 위치로 날아오는 망치 오브젝트 -->
+    <div id="strike-hammer" aria-hidden="true"></div>
+
+    <!-- ====================================================================
+         화면 A: 시작 및 트레이너 선택 화면
+         ==================================================================== -->
+    <section id="start-screen" class="screen">
+      <header class="start-header">
+        <div class="logo-badge">
+          <div class="logo-pokeball"></div>
+          <h1 class="game-title">포켓몬 <span class="pop-text">팡팡!</span></h1>
+        </div>
+        <div>
+          <span class="subtitle-badge">⚡ 30초 동안 구멍에서 튀어나오는 포켓몬을 신나게 잡아라! ⚡</span>
+        </div>
+      </header>
+
+      <!-- 트레이너 선택 영역 -->
+      <section class="trainer-section" aria-label="트레이너 선택">
+        <h2 class="section-label">
+          <span>🧢</span> 출전할 포켓몬 트레이너를 선택하세요!
+        </h2>
+        <div class="trainer-grid" id="trainer-grid">
+          <!-- JS 동적 렌더링 (지우, 이슬이, 웅이, 세레나) -->
+        </div>
+      </section>
+
+      <!-- 하단 액션 버튼 그룹 -->
+      <footer class="start-footer">
+        <button id="btn-sound-toggle" class="btn-icon-round" aria-label="소리 켜기/끄기" title="소리 토글">🔊</button>
+        <button id="btn-start-game" class="btn-game-primary" aria-label="게임 시작">
+          <span>🎮 게임 시작하기</span>
+        </button>
+        <button id="btn-rules" class="btn-icon-round" aria-label="게임 규칙" title="도움말">❓</button>
+      </footer>
+    </section>
+
+    <!-- ====================================================================
+         화면 B: 실시간 게임 플레이 화면
+         ==================================================================== -->
+    <section id="game-screen" class="screen hidden">
+      <!-- 4. 3, 2, 1 카운트다운 오버레이 (게임 화면 내 전용 오버레이) -->
+      <div id="countdown-overlay" class="countdown-overlay hidden" aria-live="assertive">
+        <div id="countdown-number" class="countdown-number">3</div>
+        <div id="countdown-sub" class="countdown-sub">READY!</div>
+      </div>
+
+      <!-- 상단 HUD 바 (프로필, 타이머, 점수, 콤보, 옵션) -->
+      <header class="hud-bar">
+        <div class="hud-trainer-profile">
+          <img id="hud-trainer-avatar" class="hud-trainer-avatar" src="" alt="트레이너">
+          <div class="hud-trainer-text">
+            <span id="hud-trainer-name" class="hud-trainer-name">지우</span>
+            <span id="hud-hammer-badge" class="hud-hammer-badge">🔨 뿅망치</span>
+          </div>
+        </div>
+
+        <!-- 타이머 -->
+        <div class="timer-container">
+          <div class="timer-text-row">
+            <span class="timer-label">남은 시간</span>
+            <span id="hud-time-val" class="timer-val">30.0</span>
+            <span class="timer-label">초</span>
+          </div>
+          <div class="timer-progress-track">
+            <div id="hud-time-progress" class="timer-progress-fill"></div>
+          </div>
+        </div>
+
+        <!-- 점수 -->
+        <div class="score-badge">
+          <span class="score-icon">⭐</span>
+          <div class="score-meta">
+            <span class="score-label">SCORE</span>
+            <span id="hud-score-val" class="score-val">0</span>
+          </div>
+        </div>
+
+        <!-- 콤보 -->
+        <div id="hud-combo-badge" class="combo-badge">
+          2 COMBO! 🔥
+        </div>
+
+        <!-- 헤더 액션 -->
+        <div class="hud-actions">
+          <button id="btn-game-sound-toggle" class="btn-icon-round" aria-label="사운드 토글">🔊</button>
+          <button id="btn-home" class="btn-icon-round" aria-label="메인 홈으로" title="홈으로">🏠</button>
+        </div>
+      </header>
+
+      <!-- 찬스 웨이브 알림 배너 -->
+      <div id="chance-banner" class="chance-banner hidden" aria-live="polite">
+        <span>⭐ CHANCE! 최고점 포켓몬을 노려라! ⭐</span>
+      </div>
+
+      <!-- 3×3 두더지 구멍 잔디밭 스테이지 -->
+      <div class="playfield-container">
+        <div class="holes-grid" id="holes-grid">
+          <!-- 9개 구멍 JS 동적 생성 -->
+        </div>
+      </div>
+
+      <!-- 하단 트레이너 대기 스테이지 -->
+      <div class="trainer-stage" aria-hidden="true">
+        <div class="active-trainer-avatar" id="active-trainer-avatar">
+          <img id="trainer-sprite-img" class="trainer-sprite-img" src="" alt="트레이너">
+          <!-- 대기 중인 망치 -->
+          <div class="held-hammer" id="held-hammer"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         화면 C: 게임 결과 화면 (Game Over / High Score)
+         ==================================================================== -->
+    <section id="result-screen" class="screen hidden" aria-modal="true" role="dialog">
+      <div class="result-card">
+        <div class="result-ribbon">TIME UP! 게임 종료</div>
+
+        <!-- 트레이너 결과 요약 -->
+        <div class="result-trainer-info">
+          <img id="res-trainer-avatar" class="result-trainer-avatar" src="" alt="트레이너">
+          <div class="result-trainer-text">
+            <div id="res-trainer-name" class="result-trainer-name">지우</div>
+            <div id="res-rank" class="result-trainer-rank">전설의 포켓몬 마스터 🏆</div>
+          </div>
+        </div>
+
+        <!-- 스코어 그리드 -->
+        <div class="result-score-grid">
+          <div class="score-box highlight">
+            <span class="score-box-label">이번 판 최종 점수</span>
+            <span id="res-final-score" class="score-box-val">0</span>
+          </div>
+          <div class="score-box">
+            <span class="score-box-label">역대 최고 점수 (Best)</span>
+            <span id="res-high-score" class="score-box-val">0</span>
+          </div>
+        </div>
+
+        <!-- 세부 스탯 -->
+        <div class="result-stats-row">
+          <div class="result-stat-item">포획 성공: <span id="res-caught-count">0</span>마리</div>
+          <div class="result-stat-item">최대 연속 콤보: <span id="res-max-combo">0x</span></div>
+        </div>
+
+        <!-- 버튼 그룹 -->
+        <div class="result-btn-row">
+          <button id="btn-replay" class="btn-game-primary" aria-label="다시 하기">
+            <span>🔄 다시 하기</span>
+          </button>
+          <button id="btn-result-home" class="btn-secondary" aria-label="트레이너 변경">
+            <span>🏠 트레이너 변경</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         화면 D: 게임 방법 / 포켓몬 점수표 모달
+         ==================================================================== -->
+    <div id="rules-modal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title">📖 포켓몬 팡팡! 도감 & 점수표</h3>
+          <button id="btn-close-rules" class="modal-close-btn" aria-label="닫기">✕</button>
+        </div>
+        <p style="font-size: 0.88rem; color: #4a5568; line-height: 1.5; margin-bottom: 12px;">
+          잔디밭 구멍에서 불쑥 튀어나오는 포켓몬들을 빠르게 클릭해 망치로 잡아보세요!<br>
+          점수가 높은 포켓몬일수록 등장 시간이 매우 짧고 번개처럼 사라집니다! 특히 환상의 포켓몬 <strong>뮤</strong>를 놓치지 마세요!
+        </p>
+        <div class="rules-pokemon-grid" id="rules-poke-grid">
+          <!-- 포켓몬 리스트 동적 렌더링 -->
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script type="module" src="./game.js"></script>
+</body>
+</html>
